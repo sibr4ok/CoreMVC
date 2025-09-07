@@ -12,15 +12,13 @@ class ShopSettings
     private $baseSettings;
 
     private $routes = [
-        'admin' => [
-            'name' => 'administrator',
+        'plugins' => [
+            'dir' => false,
+            'routes' => []
         ]
     ];
 
-    private $templateArr = [
-        'text' => ['price', 'short', 'name'],
-        'textArea' => ['goods_content']
-    ];
+
 
     private function __construct() {}
 

@@ -8,19 +8,21 @@ class Settings
 
     private $routes = [
         'admin' => [
-            'name' => 'admin',
+            'alias' => 'admin',
             'path' => 'core/admin/controllers/',
-            'hrUrl' => false
+            'hrUrl' => false,
+            'routes' => []
         ],
         'settings' => [
             'path' => 'core/base/settings/'
         ],
         'plugins' => [
             'path' => 'core/plugins/',
-            'hrUrl' => false
+            'hrUrl' => false,
+            'dir' => false
         ],
         'user' => [
-            'paht' => 'core/user/controllers/',
+            'path' => 'core/user/controllers/',
             'hrUrl' => true,
             'routes' => []
         ],
@@ -31,13 +33,6 @@ class Settings
 
         ]
     ];
-
-    private $templateArr = [
-        'text' => ['name', 'phone', 'adress'],
-        'textArea' => ['content', 'keywords']
-    ];
-
-    private $test = 'lalala';
 
     private function __construct() {}
 
