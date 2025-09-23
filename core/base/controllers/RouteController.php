@@ -6,19 +6,12 @@ use core\base\exceptions\RouteException;
 use core\base\settings\Settings;
 use Exception;
 
-class RouteController
+class RouteController extends BaseController
 {
     static private $_instance;
 
+    /** Настройки */
     protected $routes;
-
-    protected $controller;
-    protected $inputMethod;
-    protected $outputMethod;
-    protected $parameters;
-
-
-    private function __clone() {}
 
     static public function getInstance()
     {
@@ -49,12 +42,13 @@ class RouteController
             $this->routes = Settings::get('routes');
             if (!$this->routes) throw new RouteException('Отсутствуют пути в настройках');
 
+            $url = explode('/', substr($adress_str, strlen(PATH)));
+
             # Проверка на административную панель
-            if (strpos($adress_str, $this->routes['admin']['alias']) === strlen(PATH)) {
+            if ($url[0] && $url[0] === $this->routes['admin']['alias']) {
 
-                $url = explode('/', substr($adress_str, strlen(PATH . $this->routes['admin']['alias']) + 1));
-
-                //$a = $_SERVER['DOCUMENT_ROOT'] . PATH . $this->routes['plugins']['path'] . $url[0];
+                # Удаляем alias админ панели из массива
+                array_shift($url);
 
                 if ($url[0] && is_dir($_SERVER['DOCUMENT_ROOT'] . PATH . $this->routes['plugins']['path'] . $url[0])) {
 
@@ -63,12 +57,15 @@ class RouteController
 
                     $pluginSettings = $this->routes['settings']['path'] . ucfirst($plugin) . 'Settings';
 
+                    # Проверяем есть ли файл с настройками плагина
                     if (file_exists($_SERVER['DOCUMENT_ROOT'] . PATH . $pluginSettings . '.php')) {
+                        # Подключаем найстройки плагина
                         $pluginSettings = str_replace('/', '\\', $pluginSettings);
 
                         $this->routes = $pluginSettings::get('routes');
                     }
 
+                    # Дирректория для плагина
                     $dir = $this->routes['plugins']['dir'] ? '/' . $this->routes['plugins']['dir'] . '/' : '/';
                     $dir = str_replace('//', '/', $dir);
 
@@ -152,7 +149,7 @@ class RouteController
         return;
     }
 
-    public function route() {}
-
     protected function redirect() {}
+
+    private function __clone() {}
 }
