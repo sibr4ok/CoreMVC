@@ -2,10 +2,11 @@
 
 namespace core\base\settings;
 
+use core\base\controllers\Singleton;
+
 class Settings
 {
-    static private $_instance;
-
+    use Singleton;
     private $routes = [
         'admin' => [
             'alias' => 'admin',
@@ -34,21 +35,9 @@ class Settings
         ]
     ];
 
-    private function __construct() {}
-
-    private function __clone() {}
-
     static public function get($property)
     {
         return self::getInstance()->$property;
-    }
-
-    static public function getInstance()
-    {
-        if (self::$_instance instanceof self) {
-            return self::$_instance;
-        }
-        return self::$_instance = new self;
     }
 
     public function clueProperties($class)
@@ -59,7 +48,7 @@ class Settings
             $property = $class::get($name);
 
             if (is_array($property) && is_array($item)) {
-                $baseProperties[$name]  = $this->arrayMergeRecursive($this->$name, $property);
+                $baseProperties[$name] = $this->arrayMergeRecursive($this->$name, $property);
             } elseif (!$property) {
                 $baseProperties[$name] = $this->$name;
             }
@@ -79,7 +68,8 @@ class Settings
                     $baseArray[$key] = $this->arrayMergeRecursive($baseArray[$key], $value);
                 } else {
                     if (is_int($key)) {
-                        if (!in_array($value, $baseArray)) array_push($baseArray, $value);
+                        if (!in_array($value, $baseArray))
+                            array_push($baseArray, $value);
                     } else {
                         $baseArray[$key] = $value;
                     }

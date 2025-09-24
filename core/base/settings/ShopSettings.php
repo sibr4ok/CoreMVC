@@ -2,11 +2,12 @@
 
 namespace core\base\settings;
 
+use core\base\controllers\Singleton;
 use core\base\settings\Settings;
 
 class ShopSettings
 {
-    static private $_instance;
+    use Singleton;
 
     # Храниться объект Settings
     private $baseSettings;
@@ -18,27 +19,18 @@ class ShopSettings
         ]
     ];
 
-
-
-    private function __construct() {}
-
-    private function __clone() {}
-
     static public function get($property)
     {
-        return self::getInstance()->$property;
+        return self::instance()->$property;
     }
 
-    static public function getInstance()
+    static private function instance()
     {
         if (self::$_instance instanceof self) {
             return self::$_instance;
         }
 
-        # error
-        self::$_instance = new self;
-
-        self::$_instance->baseSettings = Settings::getInstance();
+        self::getInstance()->baseSettings = Settings::getInstance();
         $baseProperties = self::$_instance->baseSettings->clueProperties(get_class());
         self::$_instance->setProperty($baseProperties);
 

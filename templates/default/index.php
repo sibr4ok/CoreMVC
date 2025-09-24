@@ -1,0 +1,1 @@
+<hq style="color:red"><?= $name ?></hq>

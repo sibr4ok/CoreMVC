@@ -8,19 +8,10 @@ use Exception;
 
 class RouteController extends BaseController
 {
-    static private $_instance;
+    use Singleton;
 
     /** Настройки */
     protected $routes;
-
-    static public function getInstance()
-    {
-        # Проверяем храниться ли объект в свойстве
-        if (self::$_instance instanceof self) {
-            return self::$_instance;
-        }
-        return self::$_instance = new self;
-    }
 
     private function __construct()
     {
@@ -32,7 +23,7 @@ class RouteController extends BaseController
             $this->redirect(rtrim($adress_str, '/'), 301);
         }
 
-        # Директория в которой мы работаем 
+        # Директория в которой мы работаем
         $path = substr($_SERVER['PHP_SELF'], 0, strpos($_SERVER['PHP_SELF'], 'index.php'));
 
         # Проверка на соответсвие текущей директорией с директорией указанной в настройках
@@ -40,7 +31,8 @@ class RouteController extends BaseController
 
             # Достаем пути с настроек
             $this->routes = Settings::get('routes');
-            if (!$this->routes) throw new RouteException('Отсутствуют пути в настройках');
+            if (!$this->routes)
+                throw new RouteException('Отсутствуют пути в настройках');
 
             $url = explode('/', substr($adress_str, strlen(PATH)));
 
@@ -129,7 +121,7 @@ class RouteController extends BaseController
     {
         $route = [];
 
-        # Проверяем есть ли контроллер 
+        # Проверяем есть ли контроллер
         if (!empty($arr[0])) {
             # Проверяем есть ли контроллер В настройках
             if ($this->routes[$var]['routes'][$arr[0]]) {
@@ -148,8 +140,4 @@ class RouteController extends BaseController
 
         return;
     }
-
-    protected function redirect() {}
-
-    private function __clone() {}
 }
