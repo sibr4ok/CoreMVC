@@ -4,7 +4,6 @@ namespace core\base\controllers;
 
 use core\base\exceptions\RouteException;
 use core\base\settings\Settings;
-use Exception;
 
 class RouteController extends BaseController
 {
@@ -32,7 +31,7 @@ class RouteController extends BaseController
             # Достаем пути с настроек
             $this->routes = Settings::get('routes');
             if (!$this->routes)
-                throw new RouteException('Отсутствуют пути в настройках');
+                throw new RouteException('Отсутствуют маршруты в базовых настройках', 1);
 
             $url = explode('/', substr($adress_str, strlen(PATH)));
 
@@ -108,11 +107,7 @@ class RouteController extends BaseController
                 }
             }
         } else {
-            try {
-                throw new \Exception('Не коректная дирректория сайта');
-            } catch (\Exception $e) {
-                exit($e->getMessage());
-            }
+            throw new RouteException('Не коректная дирректория сайта', 1);
         }
     }
 

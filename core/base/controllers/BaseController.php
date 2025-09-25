@@ -34,7 +34,7 @@ abstract class BaseController
             # Создаем динамически объект и вызываем метод request
             $object->invoke(new $controller, $args);
         } catch (\ReflectionException $e) {
-            throw new RouteException($e->getMessage());
+            throw new RouteException($e->getMessage(), 0);
         }
     }
 
@@ -89,7 +89,7 @@ abstract class BaseController
         ob_start();
 
         if (!include_once $path . '.php')
-            throw new RouteException("Отсутствует шаблон - $path");
+            throw new RouteException("Отсутствует шаблон - $path", 0);
 
         return ob_get_clean();
 
