@@ -10,7 +10,7 @@ class IndexController extends BaseController
 
     protected function inputData()
     {
-        exit();
+        exit("This user panel");
     }
     protected function outputData()
     {
