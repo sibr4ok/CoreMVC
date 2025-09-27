@@ -12,12 +12,17 @@ class IndexController extends BaseController
     {
         $db = Model::getInstance();
 
-        $query = "SELECT teacher.id, teacher.name, students.id as s_id,students.name as s_name
-                    FROM teacher
-                    LEFT JOIN stud_teach ON teacher.id = stud_teach.teacher_id
-                    LEFT JOIN students ON stud_teach.student_id = students.id";
+        $table = 'teacher';
 
-        $res = $db->create();
+        $res = $db->read($table, [
+            'fields' => ['id', 'name'],
+            'where' => ['name' => 'masha, dasha, ivan', 'fio' => 'Masha', 'surname' => 'Sergeevna'],
+            'operand' => ['IN', 'LIKE%', '<>'],
+            'condition' => ["OR", 'AND'],
+            'order' => ['fio', 'name',],
+            'order_direction' => ['ASC', 'DESC'],
+            'limit' => '1'
+        ]);
 
         exit("This admin panel");
     }
