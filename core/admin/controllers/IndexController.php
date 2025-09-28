@@ -16,12 +16,7 @@ class IndexController extends BaseController
 
         $res = $db->read($table, [
             'fields' => ['id', 'name'],
-            'where' => ['name' => 'masha, dasha, ivan', 'fio' => 'Masha', 'surname' => 'Sergeevna'],
-            'operand' => ['IN', 'LIKE%', '<>'],
-            'condition' => ["OR", 'AND'],
-            'order' => ['fio', 'name',],
-            'order_direction' => ['ASC', 'DESC'],
-            'limit' => '1'
+            'where' => ['name' => "O'Raily"],
         ]);
 
         exit("This admin panel");
