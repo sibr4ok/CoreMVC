@@ -14,9 +14,13 @@ class IndexController extends BaseController
 
         $table = 'teacher';
 
-        $res = $db->read($table, [
-            'fields' => ['id', 'name'],
-            'where' => ['name' => "O'Raily"],
+        $files['gallery_img'] = ["red.jpg", "blue.jpg", "black.jpg"];
+        $files["img"] = "main_img.jpg";
+
+        $res = $db->create($table, [
+            'fields' => ['name' => 'Katya', 'content' => 'hello'],
+            'files' => $files,
+            'except' => ['content']
         ]);
 
         exit("This admin panel");
