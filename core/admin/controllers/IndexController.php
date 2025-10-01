@@ -12,16 +12,15 @@ class IndexController extends BaseController
     {
         $db = Model::getInstance();
 
-        $table = 'teacher';
+        $table = 'teachers';
 
-        $files['gallery_img'] = ["red.jpg", "blue.jpg", "black.jpg"];
-        $files["img"] = "main_img.jpg";
+        $files['galery_img'] = ["new_red.jpg"];
 
-        $res = $db->create($table, [
-            'fields' => ['name' => 'Katya', 'content' => 'hello'],
-            'files' => $files,
-            'except' => ['content']
-        ]);
+        $_POST["id"] = 3;
+        $_POST["name"] = "";
+        $_POST["content"] = "lalalala";
+
+        $res = $db->update($table);
 
         exit("This admin panel");
     }

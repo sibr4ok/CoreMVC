@@ -7,6 +7,6 @@ const SITE_URL = 'http://im.my';
 const PATH = '/';
 
 const HOST = 'localhost';
-const USER = 'debian-sys-maint';
-const PASS = 'gZ1OvLUixeexlVP0';
+const USER = 'root';
+const PASS = 'DimaR.4169';
 const DB_NAME = 'im';

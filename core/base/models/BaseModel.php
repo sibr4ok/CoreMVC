@@ -143,11 +143,15 @@ class BaseModel extends BaseModelMethods
      * return_id => true|false - возвращать или нет идентификатор вставленной записи
      * @return mixed
      */
-    final public function create($table, $set)
+    final public function create($table, $set = [])
     {
 
-        $set['fields'] = (is_array($set['fields']) && !empty($set['fields'])) ? $set['fields'] : false;
+        $set['fields'] = (is_array($set['fields']) && !empty($set['fields'])) ? $set['fields'] : $_POST;
         $set['files'] = (is_array($set['files']) && !empty($set['files'])) ? $set['files'] : false;
+
+        if (!$set['fields'] && !$set['files'])
+            return false;
+
         $set['except'] = (is_array($set['except']) && !empty($set['except'])) ? $set['except'] : false;
         $set['return_id'] = $set['return_id'] ? true : false;
 
@@ -160,5 +164,56 @@ class BaseModel extends BaseModelMethods
         }
 
         return false;
+    }
+
+    final public function update($table, $set = [])
+    {
+        $set['fields'] = (is_array($set['fields']) && !empty($set['fields'])) ? $set['fields'] : $_POST;
+        $set['files'] = (is_array($set['files']) && !empty($set['files'])) ? $set['files'] : false;
+
+        if (!$set['fields'] && !$set['files'])
+            return false;
+
+        $set['except'] = (is_array($set['except']) && !empty($set['except'])) ? $set['except'] : false;
+
+        if (!$set["all_rows"]) {
+
+            if ($set["where"]) {
+                $where = $this->createWhere($set);
+            } else {
+                $columns = $this->showColumns($table);
+
+                if (!$columns)
+                    return false;
+
+                if ($columns['id_row'] && $set['fields'][$columns['id_row']]) {
+                    $where = "WHERE " . $columns['id_row'] . "=" . $set['fields'][$columns['id_row']];
+                    # Удаляем переменную
+                    unset($set['fields'][$columns['id_row']]);
+                }
+            }
+        }
+
+        $udate = $this->createUpdate($set['fields'], $set['files'], $set['except']);
+
+        $query = "UPDATE $table SET $udate $where";
+
+        return $this->query($query, 'u');
+    }
+    final public function showColumns($table)
+    {
+        $query = "SHOW COLUMNS FROM $table";
+        $res = $this->query($query);
+
+        $columns = [];
+
+        if ($res) {
+            foreach ($res as $row) {
+                $columns[$row['Field']] = $row;
+                if ($row['Key'] === "PRI")
+                    $columns['id_row'] = $row['Field'];
+            }
+        }
+        return $columns;
     }
 }
