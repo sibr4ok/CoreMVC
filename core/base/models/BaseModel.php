@@ -76,7 +76,7 @@ class BaseModel extends BaseModelMethods
         }
     }
     /**
-     * Summary of create
+     * Универсальный метод чтения из БД
      * @param mixed $table - таблица БД
      * @param array $set
      * 'fields' => ['id', 'name'],
@@ -134,6 +134,7 @@ class BaseModel extends BaseModelMethods
         return $this->query($query);
     }
     /**
+     * Универсальный метод создания БД
      * @param mixed $table - таблица для вставки данных
      * @param array $set - массив параметров
      * fields => [поле=>значения]; если не указан, то обрабатывается $_POST [поле=>значения]
@@ -165,7 +166,17 @@ class BaseModel extends BaseModelMethods
 
         return false;
     }
-
+    /**
+     * Универсальный метод обновления БД
+     * @param mixed $table - таблица для вставки данных
+     * @param array $set - массив параметров
+     * fields => [поле=>значения]; если не указан, то обрабатывается $_POST [поле=>значения]
+     * разрешена передача NOW() в качестве Mysql функции обычной строкой
+     * files => [поле=>значения]; можно подать массив вида [поле=>[массив значений]]
+     * except => ['исключение 1','исключение 2'] - исключает данные элементы массива из добавления в запрос
+     * all_rows => true|false
+     * @return mixed
+     */
     final public function update($table, $set = [])
     {
         $set['fields'] = (is_array($set['fields']) && !empty($set['fields'])) ? $set['fields'] : $_POST;
@@ -199,6 +210,77 @@ class BaseModel extends BaseModelMethods
         $query = "UPDATE $table SET $udate $where";
 
         return $this->query($query, 'u');
+    }
+    /**
+     * Универсальный метод удаления БД, с возможностью сброса полей по умолчанию(если указаны)
+     * @param mixed $table - таблица БД
+     * @param array $set
+     * 'fields' => ['id', 'name'],
+     * 'where' => ['fio' => 'Smirnova', 'name' => 'Masha'],
+     * 'operand' => ['=', '<>'],
+     * 'condition' => ['AND'],
+     * 'join' => [
+     *     [
+     *         'table' => 'join_table1',
+     *         'fields' => ['id as j_id', 'name as j_name'],
+     *         'type' => 'left',
+     *         'where' => ['name' => 'sasha'],
+     *         'operand' => ['='],
+     *         'condition' => ['OR'],
+     *         'on' => ['id', 'parent_id'],
+     *         'group_condition' => 'AND'
+     *     ],
+     *     'join_table2' => [
+     *         'table' => 'join_table2',
+     *         'fields' => ['id as j_id', 'name as j_name'],
+     *         'type' => 'left',
+     *         'where' => ['name' => 'sasha'],
+     *         'operand' => ['='],
+     *         'condition' => ['OR'],
+     *         'on' => [
+     *             'table' => 'teacher',
+     *             'fields' => ['id', 'parent_id']
+     *         ]
+     *     ],
+     * ]
+     */
+    public function delete($table, $set = [])
+    {
+        //$table = trim($table);
+
+        $where = $this->createWhere($set, $table);
+
+        $columns = $this->showColumns($table);
+        if (!$columns)
+            return false;
+
+        if (is_array($set['fields']) && !empty($set['fields'])) {
+
+            if ($columns['id_row']) {
+                $key = array_search($columns['id_row'], $set['fields']);
+                if ($key !== false)
+                    unset($set['fields'][$key]);
+            }
+            $fields = [];
+            foreach ($set['fields'] as $field) {
+                $fields[$field] = $columns[$field]['Default'];
+            }
+
+            $update = $this->createUpdate($fields, false, false);
+            $query = "UPDATE $table SET $update $where";
+        } else {
+
+            $join_arr = $this->createJoin($set, $table);
+            $join = $join_arr['join'];
+            $join_table = $join_arr['tables'];
+
+            $query = "DELETE $table" . "$join_table FROM $table $join $where";
+
+        }
+
+
+        return $this->query($query, "d");
+
     }
     final public function showColumns($table)
     {

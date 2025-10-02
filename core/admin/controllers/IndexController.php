@@ -14,13 +14,18 @@ class IndexController extends BaseController
 
         $table = 'teachers';
 
-        $files['galery_img'] = ["new_red.jpg"];
-
-        $_POST["id"] = 3;
-        $_POST["name"] = "";
-        $_POST["content"] = "lalalala";
-
-        $res = $db->update($table);
+        $res = $db->delete($table, [
+            'where' => ['id' => 8],
+            'join' => [
+                [
+                    'table' => 'students',
+                    'on' => [
+                        'table' => 'teachers',
+                        'fields' => ['student_id', 'id']
+                    ]
+                ]
+            ]
+        ]);
 
         exit("This admin panel");
     }
