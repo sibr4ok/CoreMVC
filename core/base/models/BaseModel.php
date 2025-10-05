@@ -2,16 +2,13 @@
 
 namespace core\base\models;
 
-use core\base\controllers\Singleton;
 use core\base\exceptions\DbException;
 
-class BaseModel extends BaseModelMethods
+abstract class BaseModel extends BaseModelMethods
 {
-    use Singleton;
-
     protected $db;
 
-    private function __construct()
+    protected function connect()
     {
         try {
             # Подключаем к БД, объект содержащий выборку даных

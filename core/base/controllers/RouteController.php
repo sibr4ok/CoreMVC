@@ -17,16 +17,16 @@ class RouteController extends BaseController
         # Получаем адресную строку
         $adress_str = $_SERVER['REQUEST_URI'];
 
-        # Проверка на символ слеш в конце
-        if (strrpos($adress_str, '/') === strlen($adress_str) - 1 && strrpos($adress_str, '/') !== 0) {
-            $this->redirect(rtrim($adress_str, '/'), 301);
-        }
-
         # Директория в которой мы работаем
         $path = substr($_SERVER['PHP_SELF'], 0, strpos($_SERVER['PHP_SELF'], 'index.php'));
 
         # Проверка на соответсвие текущей директорией с директорией указанной в настройках
         if ($path === PATH) {
+
+            # Проверка на символ слеш в конце
+            if (strrpos($adress_str, '/') === strlen($adress_str) - 1 && strrpos($adress_str, '/') !== strlen($path) - 1) {
+                $this->redirect(rtrim($adress_str, '/'), 301);
+            }
 
             # Достаем пути с настроек
             $this->routes = Settings::get('routes');
