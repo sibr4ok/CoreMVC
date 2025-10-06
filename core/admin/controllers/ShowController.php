@@ -20,7 +20,16 @@ class ShowController extends BaseAdmin
 
     protected function outputData()
     {
+        $arg = func_get_arg(0);
+        $vars = $arg ? $arg : [];
 
+        // Обьевляем шаблон
+        if (!$this->template)
+            $this->template = ADMIN_TEMPLATE . 'show';
+
+        $this->content = $this->render($this->template, $vars);
+
+        return parent::outputData();
     }
 
     protected function createData($arr = [])

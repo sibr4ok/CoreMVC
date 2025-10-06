@@ -10,7 +10,6 @@ class TeachersExpansion
 
     public function expansion($args = [])
     {
-        exit();
     }
 
 }

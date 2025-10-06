@@ -36,6 +36,10 @@ class Settings
     ];
 
     private $defaultTable = "teachers";
+    private $projectTables = [
+        'teachers' => ['name' => 'Учителя', 'img' => 'pages.png'],
+        'students' => ['name' => 'Ученики']
+    ];
     private $expansion = 'core/admin/expansion/';
 
     static public function get($property)

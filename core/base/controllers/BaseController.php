@@ -8,6 +8,10 @@ use core\base\settings\Settings;
 abstract class BaseController
 {
     use BaseMethods;
+
+    protected $header;
+    protected $content;
+    protected $footer;
     protected $page;
     protected $errors;
 
@@ -16,6 +20,7 @@ abstract class BaseController
     protected $outputMethod;
     protected $parameters;
 
+    protected $template;
     protected $styles;
     protected $scripts;
 
@@ -27,7 +32,7 @@ abstract class BaseController
             # Проверяем существованеи метода request в классе $controller
             $object = new \ReflectionMethod($controller, 'request');
             $args = [
-                'paramaters' => $this->parameters,
+                'parameters' => $this->parameters,
                 'inputMethod' => $this->inputMethod,
                 'outputMethod' => $this->outputMethod
             ];
@@ -70,7 +75,7 @@ abstract class BaseController
     protected function render($path = '', $parameters = [])
     {
         # Принимаем массив
-        extract($parameters);
+        @extract($parameters);
 
         if (!$path) {
             # Получаем пространсво класса
@@ -78,7 +83,7 @@ abstract class BaseController
             $space = str_replace('\\', '/', $class->getNamespaceName() . '\\');
             $routes = Settings::get('routes');
 
-            $template = $space === $routes['user']['path'] ? TEMPLATE : ADMIN_TEMPLATES;
+            $template = $space === $routes['user']['path'] ? TEMPLATE : ADMIN_TEMPLATE;
 
             $path = $template . explode(
                 'controller',
@@ -120,12 +125,12 @@ abstract class BaseController
             }
         } else {
             if (ADMIN_CSS_JS["styles"]) {
-                foreach (USER_CSS_JS["styles"] as $item)
-                    $this->styles[] = PATH . ADMIN_TEMPLATES . trim($item, "/");
+                foreach (ADMIN_CSS_JS["styles"] as $item)
+                    $this->styles[] = PATH . ADMIN_TEMPLATE . trim($item, "/");
             }
             if (ADMIN_CSS_JS["scripts"]) {
-                foreach (USER_CSS_JS["scripts"] as $item)
-                    $this->scripts[] = PATH . ADMIN_TEMPLATES . trim($item, "/");
+                foreach (ADMIN_CSS_JS["scripts"] as $item)
+                    $this->scripts[] = PATH . ADMIN_TEMPLATE . trim($item, "/");
             }
         }
     }
