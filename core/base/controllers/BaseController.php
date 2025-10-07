@@ -24,6 +24,8 @@ abstract class BaseController
     protected $styles;
     protected $scripts;
 
+    protected $userID;
+
     /**Динамичиски вызывает метод request в классе обрабатывая возможные ошибки*/
     public function route()
     {

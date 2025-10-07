@@ -34,13 +34,21 @@ class Settings
 
         ]
     ];
-
+    private $expansion = 'core/admin/expansion/';
     private $defaultTable = "teachers";
     private $projectTables = [
         'teachers' => ['name' => 'Учителя', 'img' => 'pages.png'],
         'students' => ['name' => 'Ученики']
     ];
-    private $expansion = 'core/admin/expansion/';
+
+    private $translate = [
+        'name' => ['Название', 'Не более 100 символов.']
+    ];
+    private $blockNeedle = [
+        'vg-rows' => [],
+        'vg_img' => ['content'],
+        'vg-content' => ['img']
+    ];
 
     static public function get($property)
     {

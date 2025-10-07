@@ -8,8 +8,9 @@ class ShowController extends BaseAdmin
     protected function InputData()
     {
         # Наследуем InputData от BaseAdmin
-        $this->execBase();
-
+        if (!$this->userID) {
+            $this->execBase();
+        }
         # Выбираем из какой таблицы нам тащить данные
         $this->createTableData();
 
@@ -20,16 +21,7 @@ class ShowController extends BaseAdmin
 
     protected function outputData()
     {
-        $arg = func_get_arg(0);
-        $vars = $arg ? $arg : [];
-
-        // Обьевляем шаблон
-        if (!$this->template)
-            $this->template = ADMIN_TEMPLATE . 'show';
-
-        $this->content = $this->render($this->template, $vars);
-
-        return parent::outputData();
+        return parent::outputData(func_get_arg(0));
     }
 
     protected function createData($arr = [])

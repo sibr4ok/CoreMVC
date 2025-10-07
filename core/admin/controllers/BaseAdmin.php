@@ -20,6 +20,9 @@ abstract class BaseAdmin extends BaseController
     protected $menu;
     protected $title;
 
+    protected $translate;
+    protected $blocks = [];
+
     protected function inputData()
     {
 
@@ -39,6 +42,18 @@ abstract class BaseAdmin extends BaseController
     }
     protected function outputData()
     {
+        if (!$this->content) {
+
+            $arg = func_get_arg(0);
+            $vars = $arg ? $arg : [];
+
+            // Обьевляем шаблон
+            //if (!$this->template) $this->template = ADMIN_TEMPLATE . 'show';
+
+            $this->content = $this->render($this->template, $vars);
+
+        }
+
         $this->header = $this->render(ADMIN_TEMPLATE . "include/header");
         $this->footer = $this->render(ADMIN_TEMPLATE . "include/footer");
 
@@ -58,11 +73,16 @@ abstract class BaseAdmin extends BaseController
         self::inputData();
     }
 
-    protected function createTableData()
+    protected function createTableData($settings = false)
     {
         if (!$this->table)
-            $this->table = $this->parameters ? array_keys($this->parameters)[0]
-                : Settings::get("defaultTable");
+            if ($this->parameters) {
+                $this->table = array_keys($this->parameters)[0];
+            } else {
+                if (!$settings)
+                    $settings = $settings = Settings::getInstance();
+                $this->table = $settings::get("defaultTable");
+            }
 
         $this->columns = $this->model->showColumns($this->table);
         if (!$this->columns)
@@ -114,8 +134,59 @@ abstract class BaseAdmin extends BaseController
             if (is_readable($file))
                 return include $file;
         }
+        return null;
+    }
+    protected function createOutputData($settings = false)
+    {
+        if (!$settings)
+            $settings = Settings::getInstance();
 
-        return false;
+        // Получаем свойства с настроек
+        $blocks = $settings->get('blockNeedle');
+        $this->translate = $settings->get('translate');
+
+        if (!$blocks || !is_array($blocks)) {
+
+            foreach ($this->columns as $column => $v) {
+                if ($column === "id_row")
+                    continue;
+
+                if (!$this->translate[$column])
+                    $this->translate[$column][] = $column;
+
+                $this->blocks[0][] = $column;
+            }
+            return;
+        }
+        // Дефолтный блок
+        $default = array_keys($blocks)[0];
+
+        foreach ($this->columns as $column => $i) {
+            if ($column === "id_row")
+                continue;
+
+            $insert = false;
+
+            foreach ($blocks as $block => $v) {
+                // Создаем поле блока
+                if (!array_key_exists($block, $this->blocks))
+                    $this->blocks[$block] = [];
+                // Если есть колонка в блоке настроек
+                if (in_array($column, $v)) {
+                    $this->blocks[$block][] = $column;
+                    $insert = true;
+                    break;
+                }
+            }
+
+            // Если нет элемента в настройках то заносим в блок по умолчанию
+            if (!$insert)
+                $this->blocks[$default][] = $column;
+            if (!$this->translate[$column])
+                $this->translate[$column][] = $column;
+
+        }
+        return;
     }
 
 }
