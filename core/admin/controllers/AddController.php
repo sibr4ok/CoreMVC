@@ -17,6 +17,8 @@ class AddController extends BaseAdmin
 
         // Разбираем колонки по блокам
         $this->createOutputData();
+
+        $this->model->showForeignKeys($this->table);
     }
 
 
