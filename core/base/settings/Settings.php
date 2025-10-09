@@ -44,10 +44,18 @@ class Settings
     private $translate = [
         'name' => ['Название', 'Не более 100 символов.']
     ];
+    private $radio = [
+        'visible' => ['Нет', 'Да', 'default' => 'Да']
+    ];
     private $blockNeedle = [
         'vg-rows' => [],
         'vg_img' => ['content'],
         'vg-content' => ['img']
+    ];
+
+    private $rootItems = [
+        'name' => 'Корневая',
+        'tables' => ['articles']
     ];
 
     static public function get($property)
