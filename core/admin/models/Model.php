@@ -14,7 +14,7 @@ class Model extends BaseModel
         $db = DB_NAME;
 
         if ($key)
-            $where = "AND COLUMN_NAME = $key LIMIT 1";
+            $where = "AND COLUMN_NAME = '$key' LIMIT 1";
 
         $query = "SELECT COLUMN_NAME, REFERENCED_TABLE_NAME, REFERENCED_COLUMN_NAME
                 FROM information_schema.KEY_COLUMN_USAGE

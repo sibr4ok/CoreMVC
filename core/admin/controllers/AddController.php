@@ -17,6 +17,8 @@ class AddController extends BaseAdmin
         $this->createTableData();
         # Получение данных из связанных таблиц
         $this->createForeignData();
+        #
+        $this->createMenuPosition();
         # Формируем свойство для переключателя
         $this->createRadio();
         # Разбираем колонки по блокам
@@ -91,6 +93,72 @@ class AddController extends BaseAdmin
             $arr['REFERENCED_COLUMN_NAME'] = $this->columns['id_row'];
 
             $this->createForeignProperty($arr, $rootItems);
+        }
+        return;
+    }
+    /**
+     * Зачем нужен метод?
+     * Чтобы сформировать массив возможных позиций меню для элемента
+     * (например, выбор позиции при добавлении/редактировании пункта меню).
+     * @param mixed $settings
+     * @return void
+     */
+    protected function createMenuPosition($settings = false)
+    {
+        # Проверка необходимости формирования меню
+        if ($this->columns['menu_position']) {
+            # Получаем настройки
+            if (!$settings)
+                $settings = Settings::getInstance();
+            $rootItems = $settings::get('rootItems');
+
+            # Обработка родительского элемента
+            if ($this->columns['parent_id']) {
+                # Если текущая таблица — корневая
+                if (in_array($this->table, $rootItems['tables'])) {
+                    # то ищем элементы без родителя
+                    $where = 'parent_id IS NULL OR parent_id = 0';
+                } else {
+                    # смотрим внешний ключ parent_id
+                    $parent = $this->model->showForeignKeys($this->table, 'parent_id')[0];
+
+                    if ($parent) {
+                        # Если внешний ключ ссылается на саму себя, то ищем элементы без родителей
+                        if ($this->table === $parent['REFERENCED_TABLE_NAME']) {
+
+                            $where = 'parent_id IS NULL OR parent_id = 0';
+                        } else {
+                            # Смотрим колонки родительской таблицы
+                            $columns = $this->model->showColumns($parent['REFERENCED_TABLE_NAME']);
+
+                            $order[] = $columns['parent_id'] ? 'parent_id' : $parent['REFERENCED_COLUMN_NAME'];
+                            # Получаем ID первого родителя
+                            $id = $this->model->read($parent['REFERENCED_TABLE_NAME'], [
+                                'fields' => [$parent['REFERENCED_COLUMN_NAME']],
+                                'order' => $order,
+                                'limit' => '1'
+                            ])[0][$parent['REFERENCED_COLUMN_NAME']];
+
+                            if ($id)
+                                $where = ['parent_id' => $id];
+                        }
+                    } else {
+
+                        $where = 'parent_id IS NULL OR parent_id = 0';
+                    }
+                }
+            }
+            # Подсчёт количества элементов
+            $menu_pos = $this->model->read($this->table, [
+                'fields' => ['COUNT(*) as count'],
+                'no_concat' => true,
+                'where' => $where
+            ])[0]['count'] + 1;
+
+            for ($i = 1; $i <= $menu_pos; $i++) {
+                $this->foreignData['menu_position'][$i - 1]['id'] =
+                    $this->foreignData['menu_position'][$i - 1]['name'] = $i;
+            }
         }
         return;
     }

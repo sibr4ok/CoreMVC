@@ -52,7 +52,7 @@ class Settings
         'vg_img' => ['content'],
         'vg-content' => ['img']
     ];
-
+    # настройки, чтобы узнать, какие таблицы считаются "корневыми"
     private $rootItems = [
         'name' => 'Корневая',
         'tables' => ['articles']
