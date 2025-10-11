@@ -10,14 +10,13 @@ class AddController extends BaseAdmin
     protected function inputData()
     {
         # Наследуем InputData от BaseAdmin
-        if (!$this->userID) {
+        if (!$this->userID)
             $this->execBase();
-        }
 
         $this->createTableData();
         # Получение данных из связанных таблиц
         $this->createForeignData();
-        #
+        # Сформируем массив возможных позиций меню для элемента
         $this->createMenuPosition();
         # Формируем свойство для переключателя
         $this->createRadio();

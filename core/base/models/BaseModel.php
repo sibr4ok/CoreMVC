@@ -203,9 +203,9 @@ abstract class BaseModel extends BaseModelMethods
             }
         }
 
-        $udate = $this->createUpdate($set['fields'], $set['files'], $set['except']);
+        $update = $this->createUpdate($set['fields'], $set['files'], $set['except']);
 
-        $query = "UPDATE $table SET $udate $where";
+        $query = "UPDATE $table SET $update $where";
 
         return $this->query($query, 'u');
     }
