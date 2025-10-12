@@ -22,8 +22,8 @@ class AddController extends BaseAdmin
         $this->createRadio();
         # Разбираем колонки по блокам
         $this->createOutputData();
-
     }
+
     protected function createForeignProperty($arr, $rootItems)
     {
         # Задаём имя для таблицы в ячейку id = 0
