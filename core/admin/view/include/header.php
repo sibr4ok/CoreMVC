@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta type="keywords" content="...">
     <meta type="description" content="...">
-    <title>Document</title>
+    <title>Admin panel</title>
 
     <?php
     foreach ($this->styles as $style): ?>
@@ -65,10 +65,11 @@
 
                 <?php if ($this->menu): ?>
                     <?php foreach ($this->menu as $table => $item): ?>
-                        <a href="<?= $this->adminPath ?>show/<?= $table ?>" class="vg-wrap vg-element vg-full vg-center ">
-                            <span class="vg-element vg-half  vg-center">
-                                <span>
-                                    <img src="<?= PATH . ADMIN_TEMPLATE ?>img/<?= $item['img'] ? $item['img'] : 'pages.png' ?>"
+                        <a href="<?= $this->adminPath ?>show/<?= $table ?>" class="vg-wrap vg-element vg-full vg-center <?php if ($table === $this->table)
+                                echo 'active' ?>">
+                                <span class="vg-element vg-half  vg-center">
+                                    <span>
+                                        <img src="<?= PATH . ADMIN_TEMPLATE ?>img/<?= $item['img'] ? $item['img'] : 'pages.png' ?>"
                                         alt="pages">
                                 </span>
                             </span>

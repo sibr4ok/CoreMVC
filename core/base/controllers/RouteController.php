@@ -138,8 +138,8 @@ class RouteController extends BaseController
             $this->controller .= $this->routes['default']['controller'];
         }
 
-        $this->inputMethod = $route[1] ? $route[1] : $this->routes['default']['inputMethod'];
-        $this->outputMethod = $route[2] ? $route[2] : $this->routes['default']['outputMethod'];
+        $this->inputMethod = $route[1] ?: $this->routes['default']['inputMethod'];
+        $this->outputMethod = $route[2] ?: $this->routes['default']['outputMethod'];
 
         return;
     }

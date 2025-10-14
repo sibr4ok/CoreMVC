@@ -36,21 +36,31 @@ class Settings
     ];
     private $expansion = 'core/admin/expansion/';
     private $defaultTable = "teachers";
+
+    private $formTemplates = PATH . 'core/admin/view/include/form_templates/';
     private $projectTables = [
         'teachers' => ['name' => 'Учителя', 'img' => 'pages.png'],
         'students' => ['name' => 'Ученики']
     ];
 
+    private $templateArr = [
+        'text' => ['name'],
+        'textarea' => ['content'],
+        'radio' => ['visible'],
+        'select' => ['menu_position', 'parent_id'],
+        'img' => ['img'],
+        'gallery_img' => ['gallery_img']
+    ];
     private $translate = [
         'name' => ['Название', 'Не более 100 символов.']
     ];
     private $radio = [
-        'visible' => ['Нет', 'Да', 'default' => 'Да']
+        'visible' => ['Нет', 'Да', 'default' => 'Нет']
     ];
     private $blockNeedle = [
         'vg-rows' => [],
-        'vg_img' => ['content'],
-        'vg-content' => ['img']
+        'vg-img' => ['img'],
+        'vg-content' => ['content']
     ];
     # настройки, чтобы узнать, какие таблицы считаются "корневыми"
     private $rootItems = [

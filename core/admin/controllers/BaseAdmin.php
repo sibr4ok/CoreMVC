@@ -24,6 +24,10 @@ abstract class BaseAdmin extends BaseController
     protected $translate;
     protected $blocks = [];
 
+    protected $templateArr;
+    protected $formTemplates;
+    protected $noDelete;
+
     protected function inputData()
     {
 
@@ -37,6 +41,10 @@ abstract class BaseAdmin extends BaseController
             $this->menu = Settings::get("projectTables");
         if (!$this->adminPath)
             $this->adminPath = PATH . Settings::get("routes")["admin"]["alias"] . "/";
+        if (!$this->templateArr)
+            $this->templateArr = Settings::get('templateArr');
+        if (!$this->formTemplates)
+            $this->formTemplates = Settings::get('formTemplates');
 
         $this->sendNoCacheHeaders();
 
@@ -46,7 +54,7 @@ abstract class BaseAdmin extends BaseController
         if (!$this->content) {
 
             $arg = func_get_arg(0);
-            $vars = $arg ? $arg : [];
+            $vars = $arg ?: [];
 
             // Обьевляем шаблон
             //if (!$this->template) $this->template = ADMIN_TEMPLATE . 'show';

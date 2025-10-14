@@ -7,6 +7,8 @@ use core\base\settings\Settings;
 
 class AddController extends BaseAdmin
 {
+    protected $action = "add";
+
     protected function inputData()
     {
         # Наследуем InputData от BaseAdmin
@@ -22,6 +24,7 @@ class AddController extends BaseAdmin
         $this->createRadio();
         # Разбираем колонки по блокам
         $this->createOutputData();
+
     }
 
     protected function createForeignProperty($arr, $rootItems)
