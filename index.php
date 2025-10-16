@@ -16,7 +16,6 @@ require_once 'core/base/settings/internal_settings.php';
 use core\base\exceptions\RouteException;
 use core\base\exceptions\DbException;
 use core\base\controllers\RouteController;
-use core\base\settings\Settings;
 
 try {
     # Обращаемся к статическому методу без создания объекта
