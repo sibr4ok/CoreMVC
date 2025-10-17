@@ -21,12 +21,12 @@ class ShopSettings
         ]
     ];
 
-    static public function get($property)
+    public static function get($property)
     {
         return self::getInstance()->$property;
     }
 
-    static public function getInstance()
+    public static function getInstance()
     {
         if (self::$_instance instanceof self) {
             return self::$_instance;

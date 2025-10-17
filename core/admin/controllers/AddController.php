@@ -14,6 +14,8 @@ class AddController extends BaseAdmin
         # Наследуем InputData от BaseAdmin
         if (!$this->userID)
             $this->execBase();
+        # Проверяем пришёл ли массив POST
+        $this->checkPost();
 
         $this->createTableData();
         # Получение данных из связанных таблиц

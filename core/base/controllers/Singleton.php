@@ -4,9 +4,9 @@ namespace core\base\controllers;
 
 trait Singleton
 {
-    static private $_instance;
+    private static $_instance;
 
-    static public function getInstance()
+    public static function getInstance()
     {
         if (self::$_instance instanceof self) {
             return self::$_instance;

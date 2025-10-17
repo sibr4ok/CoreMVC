@@ -35,6 +35,7 @@ class Settings
         ]
     ];
     private $expansion = 'core/admin/expansion/';
+    private $messages = 'core/base/messages/';
     private $defaultTable = "teachers";
 
     private $formTemplates = PATH . 'core/admin/view/include/form_templates/';
@@ -68,7 +69,16 @@ class Settings
         'tables' => ['articles']
     ];
 
-    static public function get($property)
+    private $validation = [
+        'name' => ['empty' => true, 'trim' => true],
+        'price' => ['int' => true],
+        'login' => ['empty' => true, 'trim' => true],
+        'password' => ['crypt' => true, 'empty' => true],
+        'content' => ['count' => 4, 'trim' => true],
+        'description' => ['count' => 160, 'trim' => true],
+    ];
+
+    public static function get($property)
     {
         return self::getInstance()->$property;
     }
