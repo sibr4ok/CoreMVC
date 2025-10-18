@@ -53,7 +53,8 @@ class Settings
         'gallery_img' => ['gallery_img']
     ];
     private $translate = [
-        'name' => ['Название', 'Не более 100 символов.']
+        'name' => ['Название', 'Не более 100 символов.'],
+        'content' => ['Контент']
     ];
     private $radio = [
         'visible' => ['Нет', 'Да', 'default' => 'Нет']
@@ -74,7 +75,7 @@ class Settings
         'price' => ['int' => true],
         'login' => ['empty' => true, 'trim' => true],
         'password' => ['crypt' => true, 'empty' => true],
-        'content' => ['count' => 4, 'trim' => true],
+        'content' => ['count' => 100, 'trim' => true],
         'description' => ['count' => 160, 'trim' => true],
     ];
 

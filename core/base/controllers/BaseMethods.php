@@ -19,7 +19,7 @@ trait BaseMethods
     protected function clearNum($num)
     {
         if (is_numeric($num))
-            $num *= 1;
+            return $num *= 1;
         return 0;
     }
 

@@ -21,6 +21,8 @@ abstract class BaseAdmin extends BaseController
     protected $menu;
     protected $title;
 
+    protected $fileArray;
+
     protected $messages;
 
     protected $translate;
@@ -232,38 +234,6 @@ abstract class BaseAdmin extends BaseController
             }
         }
     }
-    protected function emptyFields($value, $answer, $arr = [])
-    {
-        if (empty($value)) {
-            $_SESSION['res']['answer'] = '<div class="error">' . $this->messages['empty'] . " $answer" . '</div>';
-            # Сохраняем данные в сессию и перенаправляем на эту страницу снова
-            $this->addSessionData($arr);
-        }
-    }
-    protected function addSessionData($arr = [])
-    {
-        if (!$arr)
-            $arr = $_POST;
-
-        foreach ($arr as $key => $item) {
-            $_SESSION['res'][$key] = $item;
-        }
-        $this->redirect();
-    }
-
-    protected function countChar($str, $counter, $answer, $arr)
-    {
-        if (mb_strlen($str) > $counter) {
-
-            $str_res = mb_str_replace('$1', $answer, $this->messages['count']);
-            $str_res = mb_str_replace('$2', $counter, $str_res);
-
-            $_SESSION['res']['answer'] = '<div class="error">' . $str_res . '</div>';
-            # Сохраняем данные в сессию и перенаправляем на эту страницу снова
-            $this->addSessionData($arr);
-        }
-    }
-
 
     protected function clearPostFields($settings, &$arr = [])
     {
@@ -324,9 +294,126 @@ abstract class BaseAdmin extends BaseController
         return true;
     }
 
-    protected function editData()
+    protected function emptyFields($value, $answer, $arr = [])
     {
-
+        if (empty($value)) {
+            $_SESSION['res']['answer'] = '<div class="error">' . $this->messages['empty'] . " $answer" . '</div>';
+            # Сохраняем данные в сессию и перенаправляем на эту страницу снова
+            $this->addSessionData($arr);
+        }
     }
 
+    protected function countChar($str, $counter, $answer, $arr)
+    {
+        if (mb_strlen($str) > $counter) {
+
+            $str_res = mb_str_replace('$1', $answer, $this->messages['count']);
+            $str_res = mb_str_replace('$2', $counter, $str_res);
+
+            $_SESSION['res']['answer'] = '<div class="error">' . $str_res . '</div>';
+            # Сохраняем данные в сессию и перенаправляем на эту страницу снова
+            $this->addSessionData($arr);
+        }
+    }
+    protected function addSessionData($arr = [])
+    {
+        if (!$arr)
+            $arr = $_POST;
+
+        foreach ($arr as $key => $item) {
+            $_SESSION['res'][$key] = $item;
+        }
+        $this->redirect();
+    }
+
+    protected function editData($return_id = false)
+    {
+        $id = false;
+        $method = 'create';
+        $where = [];
+
+        // Если есть id в POST то это изменение данных
+        if ($_POST[$this->columns['id_row']]) {
+
+            $id = is_numeric($_POST[$this->columns['id_row']]) ?
+                $this->clearNum($_POST[$this->columns['id_row']]) :
+                $this->clearStr($_POST[$this->columns['id_row']]);
+            if ($id) {
+
+                $where = [$this->columns['id_row'] => $id];
+                $method = 'update';
+            }
+        }
+        # Если в таблице есть время то записываем в него NOW() - текущее время
+        foreach ($this->columns as $key => $item) {
+            if (is_array($item) && ($item['Type'] === 'date' || $item['Type'] === 'datetime')) {
+                if (!$_POST[$key])
+                    $_POST[$key] = 'NOW() ';
+            }
+        }
+
+        $this->createFile();
+        $this->createAlias($id);
+        $this->updateMenuPosition();
+        $except = $this->checkExceptFields();
+
+        # отправляем запрос в бд
+        $res_id = $this->model->$method($this->table, [
+            'files' => $this->fileArray,
+            'where' => $where,
+            'return_id' => true,
+            'except' => $except
+        ]);
+
+        if (!$id && $method === 'create') {
+            # записываем новый id
+            $_POST[$this->columns['id_row']] = $res_id;
+
+            $answerSuccess = $this->messages['addSuccess'];
+            $answerFail = $this->messages['addFail'];
+        } else {
+            $answerSuccess = $this->messages['editSuccess'];
+            $answerFail = $this->messages['editFail'];
+        }
+
+        # для расширения
+        $this->expansion(get_defined_vars());
+
+        $result = $this->checkAlias($_POST[$this->columns['id_row']]);
+
+        # формируем ответы
+        if ($res_id) {
+            $_SESSION['res']['answer'] = '<div class="success">' . $answerSuccess . '</div>';
+
+            if (!$return_id)
+                $this->redirect();
+
+            return $_POST[$this->columns['id_row']];
+        } else {
+            $_SESSION['res']['answer'] = '<div class="error">' . $answerFail . '</div>';
+
+            if (!$return_id)
+                $this->redirect();
+        }
+    }
+
+    protected function checkExceptFields()
+    {
+    }
+
+    protected function createFile()
+    {
+    }
+
+    protected function createAlias($id = false)
+    {
+    }
+
+    protected function updateMenuPosition()
+    {
+    }
+
+    protected function checkAlias($id)
+    {
+    }
 }
