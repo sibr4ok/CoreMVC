@@ -7,13 +7,12 @@ use core\base\settings\Settings;
 
 class AddController extends BaseAdmin
 {
-    protected $action = "add";
+    protected string $action = "add";
 
     protected function inputData()
     {
         # Наследуем InputData от BaseAdmin
-        if (!$this->userID)
-            $this->execBase();
+        if (!$this->userID) $this->execBase();
         # Проверяем пришёл ли массив POST
         $this->checkPost();
 
@@ -45,7 +44,7 @@ class AddController extends BaseAdmin
         } else {
             # Если явно нет поля name
             foreach ($columns as $key => $value) {
-                if (strpos($key, 'name') !== false)
+                if (str_contains($key, 'name'))
                     $name = $key . ' as name';
             }
             if (!$name)

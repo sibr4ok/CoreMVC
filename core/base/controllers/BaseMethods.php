@@ -5,7 +5,7 @@ namespace core\base\controllers;
 trait BaseMethods
 {
 
-    protected function clearStr($str)
+    protected function clearStr($str): array|string
     {
         if (is_array($str)) {
             foreach ($str as $key => $item)
@@ -16,24 +16,24 @@ trait BaseMethods
         }
     }
 
-    protected function clearNum($num)
+    protected function clearNum($num): int
     {
         if (is_numeric($num))
             return $num *= 1;
         return 0;
     }
 
-    protected function isPost()
+    protected function isPost(): bool
     {
         return $_SERVER["REQUEST_METHOD"] == "POST";
     }
 
-    protected function isAjax()
+    protected function isAjax(): bool
     {
         return isset($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH'] === "XMLHttpRequest";
     }
 
-    /** Перенаправляет адресс сайта*/
+    /** Перенаправляет адрес сайта*/
     protected function redirect($http = false, $code = 0)
     {
         if ($code) {

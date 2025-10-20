@@ -41,10 +41,10 @@ class ShowController extends BaseAdmin
 
         if (count($fields) < 3) {
             foreach ($this->columns as $key => $value) {
-                if (!$fields['name'] && strpos($key, 'name') !== false) {
+                if (!$fields['name'] && str_contains($key, 'name')) {
                     $fields['name'] = $key . ' as name';
                 }
-                if (!$fields['img'] && strpos($key, 'img') === 0) {
+                if (!$fields['img'] && str_starts_with($key, 'img')) {
                     $fields['img'] = $key . ' as img';
                 }
             }
@@ -59,20 +59,21 @@ class ShowController extends BaseAdmin
         }
         # Сортировки:
         if ($this->columns['parent_id']) {
-            if (!in_array('parent_id', $fields))
-                $fields[] = 'parent_id';
+            if (!in_array('parent_id', $fields))  $fields[] = 'parent_id';
+
             $order[] = 'parent_id';
         }
+
         if ($this->columns['menu_position']) {
             $order[] = 'menu_position';
         } elseif ($this->columns['date']) {
-            if ($order)
-                $order_direction = ['ASC', 'DESC'];
-            else
-                $order_direction[] = 'DESC';
+
+            if ($order) $order_direction = ['ASC', 'DESC'];
+                else $order_direction[] = 'DESC';
 
             $order[] = 'date';
         }
+
         // Склеиваем сортировки из поступившего массива
         if ($arr['order']) {
             if (is_array($arr['order']))
@@ -92,5 +93,7 @@ class ShowController extends BaseAdmin
             'order' => $order,
             'order_direction' => $order_direction
         ]);
+
+        return $this->data;
     }
 }
