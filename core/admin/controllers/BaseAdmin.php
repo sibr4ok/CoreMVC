@@ -21,6 +21,7 @@ abstract class BaseAdmin extends BaseController
     protected $menu;
     protected $title;
 
+    protected string $alias;
     protected $fileArray;
 
     protected $messages;
@@ -63,7 +64,7 @@ abstract class BaseAdmin extends BaseController
             $arg = func_get_arg(0);
             $vars = $arg ?: [];
 
-            // Обьевляем шаблон
+            // Объявляем шаблон
             //if (!$this->template) $this->template = ADMIN_TEMPLATE . 'show';
 
             $this->content = $this->render($this->template, $vars);
@@ -96,7 +97,7 @@ abstract class BaseAdmin extends BaseController
                 $this->table = array_keys($this->parameters)[0];
             } else {
                 if (!$settings)
-                    $settings = $settings = Settings::getInstance();
+                    $settings = Settings::getInstance();
                 $this->table = $settings::get("defaultTable");
             }
 
@@ -106,7 +107,7 @@ abstract class BaseAdmin extends BaseController
     }
 
     /**
-     * метод, который в зависимости от таблиц, если найдет подобного рода файлы,
+     * Метод, который в зависимости от таблиц, если найдет подобного рода файлы,
      *  подключит классы этих файлов, класс этого файла,
      *  вызовет у него некий базовый метод который должен быть по дефолту,
      *  и дальше именно в этих классах мы будем осуществлять кодирование.
@@ -195,14 +196,13 @@ abstract class BaseAdmin extends BaseController
                 }
             }
 
-            // Если нет элемента в настройках то заносим в блок по умолчанию
+            // Если нет элемента в настройках, то заносим в блок по умолчанию
             if (!$insert)
                 $this->blocks[$default][] = $column;
             if (!$this->translate[$column])
                 $this->translate[$column][] = $column;
 
         }
-        return;
     }
     protected function createRadio($settings = false)
     {
@@ -332,7 +332,7 @@ abstract class BaseAdmin extends BaseController
         $method = 'create';
         $where = [];
 
-        // Если есть id в POST то это изменение данных
+        // Если есть id в POST, то это изменение данных
         if ($_POST[$this->columns['id_row']]) {
 
             $id = is_numeric($_POST[$this->columns['id_row']]) ?
@@ -344,7 +344,7 @@ abstract class BaseAdmin extends BaseController
                 $method = 'update';
             }
         }
-        # Если в таблице есть время то записываем в него NOW() - текущее время
+        # Если в таблице есть время, то записываем в него NOW() - текущее время
         foreach ($this->columns as $key => $item) {
             if (is_array($item) && ($item['Type'] === 'date' || $item['Type'] === 'datetime')) {
                 if (!$_POST[$key])
@@ -355,6 +355,7 @@ abstract class BaseAdmin extends BaseController
         $this->createFile();
         $this->createAlias($id);
         $this->updateMenuPosition();
+
         $except = $this->checkExceptFields();
 
         # отправляем запрос в бд
@@ -395,25 +396,111 @@ abstract class BaseAdmin extends BaseController
             if (!$return_id)
                 $this->redirect();
         }
+        return null;
     }
 
-    protected function checkExceptFields()
+    /* Метод исключающий поля из системы добавления*/
+    protected function checkExceptFields($arr = []): array
     {
+        $except = [];
+
+        if(!$arr) {
+            $arr = $_POST;
+        }else{
+            foreach ($arr as $key => $item) {
+                if(!$this->columns[$key]) $except[] = $key;
+            }
+        }
+        return $except;
     }
 
     protected function createFile()
     {
     }
 
-    protected function createAlias($id = false)
+    protected function createAlias($id = false): void
     {
+        if(!empty($this->columns['alias'])) {
+
+            $alias_str = [];
+
+            if(!$_POST['alias']) {
+
+                if ($_POST['name']) {
+
+                    $alias_str = $this->clearStr($_POST['name']);
+                } else {
+
+                    foreach ($_POST as $key => $value) {
+                        if (str_contains($key, 'name') && $value) {
+                            $alias_str = $this->clearStr($value);
+                            break;
+                        }
+                    }
+                }
+            }else{
+
+                $alias_str = $_POST['alias'] = $this->clearStr($_POST['alias']);
+            }
+
+            // Система транслитерации
+            $textModify = new \libraries\TextModify();
+            $alias = $textModify->translit($alias_str);
+
+            // Проверяем есть ли ссылка в таблице
+            $where['alias'] = $alias;
+            $operand[] =  '=';
+
+            if($id){
+
+                $where[$this->columns['id_row']] = $id;
+                $operand[] = '<>';
+            }
+
+            $res_alias = $this->model->read($this->table, [
+                'fields' => ['alias'],
+                'where' => $where,
+                'operand' => $operand,
+                'limit' => '1'
+            ])[0];
+
+            if(!$res_alias) {
+
+                $_POST['alias'] = $alias;
+            }else{
+
+                $this->alias = $alias;
+                $_POST['alias'] = '';
+            }
+
+            // Если мы редактируем, то отправляем браузеру 301 код для смены ссылки
+            if($_POST['alias'] && $id) {
+
+                if(method_exists($this, 'checkOldAlias')) $this->checkOldAlias($id);
+            }
+        }
+
     }
 
     protected function updateMenuPosition()
     {
     }
 
-    protected function checkAlias($id)
+    protected function checkAlias($id): bool
     {
+        if($id){
+
+            if(!empty($this->alias)){
+                $this->alias .= '-' . $id;
+
+                $this->model->update($this->table, [
+                    'fields' => ['alias' => $this->alias],
+                    'where' => [$this->columns['id_row'] => $id],
+                ]);
+
+                return true;
+            }
+        }
+        return false;
     }
 }
