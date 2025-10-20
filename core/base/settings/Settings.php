@@ -7,7 +7,7 @@ use core\base\controllers\Singleton;
 class Settings
 {
     use Singleton;
-    private $routes = [
+    private array $routes = [
         'admin' => [
             'alias' => 'admin',
             'path' => 'core/admin/controllers/',
@@ -34,17 +34,17 @@ class Settings
 
         ]
     ];
-    private $expansion = 'core/admin/expansion/';
-    private $messages = 'core/base/messages/';
-    private $defaultTable = "teachers";
+    private string $expansion = 'core/admin/expansion/';
+    private string $messages = 'core/base/messages/';
+    private string $defaultTable = "teachers";
 
-    private $formTemplates = PATH . 'core/admin/view/include/form_templates/';
-    private $projectTables = [
+    private string $formTemplates = PATH . 'core/admin/view/include/form_templates/';
+    private array $projectTables = [
         'teachers' => ['name' => 'Учителя', 'img' => 'pages.png'],
         'students' => ['name' => 'Ученики']
     ];
 
-    private $templateArr = [
+    private array $templateArr = [
         'text' => ['name'],
         'textarea' => ['content'],
         'radio' => ['visible'],
@@ -52,25 +52,25 @@ class Settings
         'img' => ['img'],
         'gallery_img' => ['gallery_img']
     ];
-    private $translate = [
+    private array $translate = [
         'name' => ['Название', 'Не более 100 символов.'],
         'content' => ['Контент']
     ];
-    private $radio = [
+    private array $radio = [
         'visible' => ['Нет', 'Да', 'default' => 'Нет']
     ];
-    private $blockNeedle = [
+    private array $blockNeedle = [
         'vg-rows' => [],
         'vg-img' => ['img'],
         'vg-content' => ['content']
     ];
     # настройки, чтобы узнать, какие таблицы считаются "корневыми"
-    private $rootItems = [
+    private array $rootItems = [
         'name' => 'Корневая',
         'tables' => ['articles']
     ];
 
-    private $validation = [
+    private array $validation = [
         'name' => ['empty' => true, 'trim' => true],
         'price' => ['int' => true],
         'login' => ['empty' => true, 'trim' => true],
@@ -84,7 +84,7 @@ class Settings
         return self::getInstance()->$property;
     }
 
-    public function clueProperties($class)
+    public function clueProperties($class): array
     {
         $baseProperties = [];
 
@@ -111,9 +111,9 @@ class Settings
                 if (is_array($value) && is_array($baseArray[$key])) {
                     $baseArray[$key] = $this->arrayMergeRecursive($baseArray[$key], $value);
                 } else {
-                    if (is_int($key)) {
-                        if (!in_array($value, $baseArray))
-                            array_push($baseArray, $value);
+                    if (is_int($key) && !in_array($value, $baseArray)) {
+                        $baseArray = $value;
+                        //array_push($baseArray, $value);
                     } else {
                         $baseArray[$key] = $value;
                     }

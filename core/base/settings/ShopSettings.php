@@ -7,44 +7,12 @@ use core\base\settings\Settings;
 
 class ShopSettings
 {
-    use Singleton {
-        getInstance as traitInstance;
-    }
-
-    # Храниться объект Settings
-    private $baseSettings;
-
-    private $routes = [
+    use BaseSettings;
+    private array $routes = [
         'plugins' => [
             'dir' => false,
-            'routes' => []
+            'routes' => [],
+            'lalalal' => 'kdasjlf'
         ]
     ];
-
-    public static function get($property)
-    {
-        return self::getInstance()->$property;
-    }
-
-    public static function getInstance()
-    {
-        if (self::$_instance instanceof self) {
-            return self::$_instance;
-        }
-
-        self::traitInstance()->baseSettings = Settings::getInstance();
-        $baseProperties = self::$_instance->baseSettings->clueProperties(get_class());
-        self::$_instance->setProperty($baseProperties);
-
-        return self::$_instance;
-    }
-
-    protected function setProperty($properties)
-    {
-        if ($properties) {
-            foreach ($properties as $name => $property) {
-                $this->$name = $property;
-            }
-        }
-    }
 }
