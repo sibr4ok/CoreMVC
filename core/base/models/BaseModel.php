@@ -8,6 +8,9 @@ abstract class BaseModel extends BaseModelMethods
 {
     protected $db;
 
+    /**
+     * @throws DbException
+     */
     protected function connect()
     {
         try {
@@ -24,12 +27,12 @@ abstract class BaseModel extends BaseModelMethods
 
     }
     /**
-     * @param mixed $query
-     * @param mixed $crud = r - SELECT, c - INSERT, u - UPDATE, d - DELETE
-     * @param mixed $return_id
-     * @throws \core\base\exceptions\DbException
+     * @param string $query
+     * @param string $crud = r - SELECT, c - INSERT, u - UPDATE, d - DELETE
+     * @param bool $return_id
+     * @throws DbException
      */
-    final public function query($query, $crud = 'r', $return_id = false)
+    final public function query(string $query, string $crud = 'r', bool $return_id = false)
     {
         try {
             $result = $this->db->query($query);
@@ -109,7 +112,7 @@ abstract class BaseModel extends BaseModelMethods
      *     ],
      * ]
      */
-    final public function read($table, $set = [])
+    final public function read($table, array $set = [])
     {
         $fields = $this->createFields($set, $table);
         $where = $this->createWhere($set, $table);
@@ -275,7 +278,11 @@ abstract class BaseModel extends BaseModelMethods
         return $this->query($query, "d");
 
     }
-    final public function showColumns($table)
+
+    /**
+     * @throws DbException
+     */
+    final public function showColumns($table): array
     {
         $query = "SHOW COLUMNS FROM $table";
         $res = $this->query($query);
@@ -290,5 +297,24 @@ abstract class BaseModel extends BaseModelMethods
             }
         }
         return $columns;
+    }
+
+    /**
+     * @throws DbException
+     */
+    final public function showTables(): array
+    {
+        $query = "SHOW TABLES";
+
+        $tables = $this->query($query);
+
+        $table_arr = [];
+
+        if($tables) {
+            foreach ($tables as $table) {
+                $table_arr[] = reset($table);
+            }
+        }
+        return $table_arr;
     }
 }
