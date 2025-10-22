@@ -6,6 +6,7 @@ use core\base\controllers\BaseController;
 use core\admin\models\Model;
 use core\base\exceptions\RouteException;
 use core\base\settings\Settings;
+use libraries\FileEdit;
 
 abstract class BaseAdmin extends BaseController
 {
@@ -353,12 +354,14 @@ abstract class BaseAdmin extends BaseController
         }
 
         $this->createFile();
+        // создаем url для страницы
         $this->createAlias($id);
         $this->updateMenuPosition();
 
+        //исключаем поля из системы добавления
         $except = $this->checkExceptFields();
 
-        # отправляем запрос в бд
+        //отправляем запрос в бд
         $res_id = $this->model->$method($this->table, [
             'files' => $this->fileArray,
             'where' => $where,
@@ -416,6 +419,8 @@ abstract class BaseAdmin extends BaseController
 
     protected function createFile()
     {
+        $fileEdit = new FileEdit();
+        $this->fileArray = $fileEdit->addFile();
     }
 
     protected function createAlias($id = false): void
