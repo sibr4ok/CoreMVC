@@ -11,3 +11,9 @@ RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !favicon.ico
 
 RewriteRule ^(.*) index.php
+
+php_value upload_max_filesize 64M
+
+php_value post_max_size 64M
+
+php_value max_execution_time 300
