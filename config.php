@@ -3,7 +3,7 @@
 # Проверяем константу, или завершаем работу скрипта
 defined('VG_ACCESS') or die('Access denied');
 
-const SITE_URL = 'http://im.my';
+const SITE_URL = 'https://tempgun123.ru/';
 const PATH = '/';
 
 const HOST = 'localhost';
