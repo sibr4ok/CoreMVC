@@ -9,11 +9,12 @@ class CreatesitemapController extends BaseAdmin
 
     protected array $linkArr = [];
     protected string $parsingLogFile = 'parsing_log.txt';
-    /* ! Без точек и пробелов*/
+    /* Без точек и пробелов ! */
     protected array $fileArr = ['jpg', 'jpeg', 'png', 'xls', 'xlsx'];
 
+    /* Слэши экранировать ! */
     protected array $filterArr = [
-        'url' => [],
+        'url' => ['list'],
         'get' => []
     ];
 
@@ -45,9 +46,9 @@ class CreatesitemapController extends BaseAdmin
      * Метод для парсинга
      * @param $url string ссылка которую парсим
      * @param $index int индекс в массиве со ссылками
-     * @return mixed
+     * @return bool
      */
-    protected function parsing(string $url, int $index = 0)
+    protected function parsing(string $url, int $index = 0) : bool
     {
 
         /* Инициализируем дескриптор */
@@ -74,7 +75,7 @@ class CreatesitemapController extends BaseAdmin
         curl_close($curl);
 
         /* \d - спец символ цифр; \.? - может быть точка */
-        if(!preg_match("/HTTP\/\d\.?\d?\s+20\d/uis", $output)){
+        if(!preg_match("/HTTP\/\d\.?\d?\s+20\d/ui", $output)){
 
             $this->writeLog('Не корректная ссылка при парсинге -' . $url, $this->parsingLogFile);
 
@@ -89,7 +90,7 @@ class CreatesitemapController extends BaseAdmin
         /* Регулярное выражение
          u - флаг поиск по многобайтным кодировкам; i - регистр независимый;
          s - многострочный поиск; \s+ - пробел более раз; */
-        if(!preg_match("/content-type:\s+text\/html/uis", $output)){
+        if(!preg_match("/content-type:\s+text\/html/ui", $output)){
 
             /* Разрегистрируем ячейку массива и восстановим порядок массива*/
             unset($this->linkArr[$index]);
@@ -133,11 +134,31 @@ class CreatesitemapController extends BaseAdmin
 
     /**
      * Метод для фильтрации определенных ссылок
-     * @param $link mixed
-     * @return void
+     * @param $link string
+     * @return bool
      */
-    protected function filter($link) : bool
+    protected function filter(string $link) : bool
     {
+
+        if($this->filterArr){
+
+            foreach($this->filterArr as $type => $values){
+
+                if($values){
+
+                    foreach($values as $item){
+
+                        if($type === "url"){
+                            if(preg_match("/$item.*[?|$]/ui", $link)) return false;
+                        }
+                        if($type === "get"){
+                            if(preg_match("/(\?|&amp;|=|&)$item(=|&amp;|&|$)/ui", $link)) return false;
+                        }
+                    }
+                }
+            }
+        }
+
         return true;
     }
 
