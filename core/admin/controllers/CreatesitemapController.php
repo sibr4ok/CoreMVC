@@ -9,7 +9,8 @@ class CreatesitemapController extends BaseAdmin
 
     protected array $linkArr = [];
     protected string $parsingLogFile = 'parsing_log.txt';
-    protected array $fileArr = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'xls','xlsx'];
+    /* ! Без точек и пробелов*/
+    protected array $fileArr = ['jpg', 'jpeg', 'png', 'xls', 'xlsx'];
 
     protected array $filterArr = [
         'url' => [],
@@ -36,7 +37,7 @@ class CreatesitemapController extends BaseAdmin
 
         $this->createSitemap();
 
-        if(!$_SESSION['res']['answer']) $_SESSION['res']['answer'] = '<div class="success">Sitemap created</div>"';
+        if(!$_SESSION['res']['answer']) $_SESSION['res']['answer'] = '<div class="success">Sitemap created</div>';
         $this->redirect();
     }
 
@@ -44,11 +45,10 @@ class CreatesitemapController extends BaseAdmin
      * Метод для парсинга
      * @param $url string ссылка которую парсим
      * @param $index int индекс в массиве со ссылками
-     * @return void
+     * @return mixed
      */
     protected function parsing(string $url, int $index = 0)
     {
-        //if(mb_strlen(SITE_URL)+1 === mb_strlen($url) && mb_strrpos($url,'/') === mb_strlen($url)-1) return;
 
         /* Инициализируем дескриптор */
         $curl = curl_init();
@@ -73,19 +73,6 @@ class CreatesitemapController extends BaseAdmin
 
         curl_close($curl);
 
-
-        /* Регулярное выражение
-         u - флаг поиск по многобайтным кодировкам; i - регистр независимый;
-         s - многострочный поиск; \s+ - пробел более раз; */
-        if(!preg_match("/content-type:\s+text\/html/uis", $output)){
-
-            /* Разрегистрируем ячейку массива и восстановим порядок массива*/
-            unset($this->linkArr[$index]);
-            $this->linkArr = array_values($this->linkArr);
-
-            return;
-        }
-
         /* \d - спец символ цифр; \.? - может быть точка */
         if(!preg_match("/HTTP\/\d\.?\d?\s+20\d/uis", $output)){
 
@@ -96,10 +83,52 @@ class CreatesitemapController extends BaseAdmin
 
             $_SESSION['res']['answer'] = '<div class="error">Incorrect link in parsing - ' . $url . '<br>Sitemap created' .'</div>';
 
-            return;
+            return false;
         }
 
+        /* Регулярное выражение
+         u - флаг поиск по многобайтным кодировкам; i - регистр независимый;
+         s - многострочный поиск; \s+ - пробел более раз; */
+        if(!preg_match("/content-type:\s+text\/html/uis", $output)){
 
+            /* Разрегистрируем ячейку массива и восстановим порядок массива*/
+            unset($this->linkArr[$index]);
+            $this->linkArr = array_values($this->linkArr);
+
+            return false;
+        }
+
+        /* Регулярное выражение для разбора ссылок
+        () - переменная; \1 - объявлении первой переменной;
+        *? - любые значения; [^>] - все значения кроме '>';
+        */
+        preg_match_all('/<a\s*?[^>]*?href\s*?=\s*?"(.+?)"[^>]*?>/ui', $output, $links);
+
+        if(isset($links[1])){
+            foreach($links[1] as $link){
+
+                if($link === "/" || $link === SITE_URL . "/") continue;
+
+                /* Проверяем ссылку на расширение */
+                foreach($this->fileArr as $ext){
+                    if(preg_match("/$ext\s*?$/ui", $link)) continue 2;
+                }
+
+                if(str_starts_with($link, "/")){
+                    $link = SITE_URL . $link;
+                }
+
+                if(str_starts_with($link, SITE_URL) && $link !== "#" && !in_array($link, $this->linkArr)){
+
+                    if($this->filter($link)){
+
+                        $this->linkArr[] = $link;
+                        //$this->parsing($link, count($this->linkArr) - 1);
+                    }
+                }
+            }
+        }
+        return true;
     }
 
     /**
@@ -107,9 +136,9 @@ class CreatesitemapController extends BaseAdmin
      * @param $link mixed
      * @return void
      */
-    protected function filter($link){
-
-
+    protected function filter($link) : bool
+    {
+        return true;
     }
 
     /**
