@@ -1,5 +1,7 @@
 <?php
 
+/* Заново переписать*/
+
 namespace core\admin\controllers;
 use core\base\controllers\BaseMethods;
 
@@ -7,34 +9,86 @@ class CreatesitemapController extends BaseAdmin
 {
     use BaseMethods;
 
-    protected array $linkArr = [];
+    protected array $all_links = [];
+    protected array $temp_links = [];
+
+    protected int $maxLinks = 5000;
     protected string $parsingLogFile = 'parsing_log.txt';
     /* Без точек и пробелов ! */
     protected array $fileArr = ['jpg', 'jpeg', 'png', 'xls', 'xlsx'];
 
     /* Слэши экранировать ! */
     protected array $filterArr = [
-        'url' => ['list'],
+        'url' => [],
         'get' => []
     ];
 
-    protected function inputData()
+    protected function inputData($links_counter = 1)
     {
         /* Проверяем существование расширения curl */
         if(!function_exists('curl_init')){
+            $this->cancel(0, "Library CURL as absent. Creation of sitemap impossible", "", true);
+        }
 
-            $this->writeLog('Отсутствует библиотека CURL');
-            $_SESSION['res']['answer'] = '<div class="error">Library CURL as absent. Creation of sitemap impossible</div>';
-            $this->redirect();
+        if (!$this->userID) $this->execBase();
+
+        if(!$this->checkParsingTable()){
+            $this->cancel(0, "Parsing sitemap table failed", "", true);
         }
 
         /* Снимаем ограничения по исполнению скрипта */
         set_time_limit(0);
-        /* Удаляем лог файл */
-        if(file_exists($_SERVER['DOCUMENT_ROOT'] . PATH . 'log/' . $this->parsingLogFile))
-            @unlink($_SERVER['DOCUMENT_ROOT'] . PATH . 'log/' . $this->parsingLogFile);
 
-        $this->parsing(SITE_URL);
+        /* Возвращаем данные из таблицы */
+        $reserve = $this->model->read('parsing_data')[0];
+
+        foreach ($reserve as $name => $item){
+            if($item) $this->$name = json_decode($item, true);
+                else $this->$name = [SITE_URL];
+        }
+
+        $this->maxLinks = (int)$links_counter > 1 ? ceil($this->maxLinks / $links_counter) : $this->maxLinks;
+
+        while($this->temp_links){
+
+            $temp_link_counter = count($this->temp_links);
+
+            $links = $this->temp_links;
+
+            $this->temp_links = [];
+
+            if($temp_link_counter > $this->maxLinks){
+
+                $links = array_chunk($links, ceil($temp_link_counter / $this->maxLinks));
+
+                $count_chunks = count($links);
+
+                for($i = 0; $i < $count_chunks; $i++){
+
+                    $this->parsing($links[$i]);
+                    unset($links[$i]);
+
+                    if($links){
+
+                        $this->model->edit('parsing_data', [
+                            'fields' => [
+                                'temp_links' => json_encode(array_merge(...$links)),
+                                'all_links' => json_encode($this->all_links)
+                            ],
+                        ]);
+                    }
+                }
+
+            }
+            //else {$this->parsing($links);}
+
+            $this->model->edit('parsing_data', [
+                'fields' => [
+                    'temp_links' => json_encode($this->temp_links),
+                    'all_links' => json_encode($this->all_links)
+                ],
+            ]);
+        }
 
         $this->createSitemap();
 
@@ -74,13 +128,14 @@ class CreatesitemapController extends BaseAdmin
 
         curl_close($curl);
 
+
         /* \d - спец символ цифр; \.? - может быть точка */
         if(!preg_match("/HTTP\/\d\.?\d?\s+20\d/ui", $output)){
 
             $this->writeLog('Не корректная ссылка при парсинге -' . $url, $this->parsingLogFile);
 
-            unset($this->linkArr[$index]);
-            $this->linkArr = array_values($this->linkArr);
+            unset($this->all_links[$index]);
+            $this->all_links = array_values($this->all_links);
 
             $_SESSION['res']['answer'] = '<div class="error">Incorrect link in parsing - ' . $url . '<br>Sitemap created' .'</div>';
 
@@ -93,8 +148,8 @@ class CreatesitemapController extends BaseAdmin
         if(!preg_match("/content-type:\s+text\/html/ui", $output)){
 
             /* Разрегистрируем ячейку массива и восстановим порядок массива*/
-            unset($this->linkArr[$index]);
-            $this->linkArr = array_values($this->linkArr);
+            unset($this->all_links[$index]);
+            $this->all_links = array_values($this->all_links);
 
             return false;
         }
@@ -112,19 +167,19 @@ class CreatesitemapController extends BaseAdmin
 
                 /* Проверяем ссылку на расширение */
                 foreach($this->fileArr as $ext){
-                    if(preg_match("/$ext\s*?$/ui", $link)) continue 2;
+                    if(preg_match("/$ext\s*?$|\?[^\/]/ui", $link)) continue 2;
                 }
 
                 if(str_starts_with($link, "/")){
                     $link = SITE_URL . $link;
                 }
 
-                if(str_starts_with($link, SITE_URL) && $link !== "#" && !in_array($link, $this->linkArr)){
+                if(str_starts_with($link, SITE_URL) && $link !== "#" && !in_array($link, $this->all_links)){
 
                     if($this->filter($link)){
 
-                        $this->linkArr[] = $link;
-                        //$this->parsing($link, count($this->linkArr) - 1);
+                        $this->all_links[] = $link;
+                        //$this->parsing($link, count($this->all_links) - 1);
                     }
                 }
             }
@@ -139,17 +194,15 @@ class CreatesitemapController extends BaseAdmin
      */
     protected function filter(string $link) : bool
     {
-
         if($this->filterArr){
 
             foreach($this->filterArr as $type => $values){
 
                 if($values){
-
                     foreach($values as $item){
 
                         if($type === "url"){
-                            if(preg_match("/$item.*[?|$]/ui", $link)) return false;
+                            if(preg_match("/^[^?]*$item/ui", $link)) return false;
                         }
                         if($type === "get"){
                             if(preg_match("/(\?|&amp;|=|&)$item(=|&amp;|&|$)/ui", $link)) return false;
@@ -158,8 +211,56 @@ class CreatesitemapController extends BaseAdmin
                 }
             }
         }
-
         return true;
+    }
+
+
+    protected function checkParsingTable(): bool
+    {
+
+        $tables = $this->model->showTables();
+
+
+        if(!in_array('parsing_data', $tables)){
+            $query = "CREATE TABLE parsing_data (all_links TEXT, temp_links TEXT)";
+
+            if(!$this->model->query($query, 'c') ||
+                !$this->model->create('parsing_data' , [
+                'fields' => ['all_links' => '', 'temp_links' => '']
+                ])){ return false; }
+        }
+        return true;
+    }
+
+
+    /** Отвечает за написание log
+     * @param $success int успешность выполнения
+     * @param $message string сообщение пользователю
+     * @param $log_message string сообщение для log
+     * @param $exit bool флаг выхода
+     */
+    protected function cancel(int $success = 0, string $message = "", string $log_message = "", bool $exit = false){
+
+        $exitArr = [];
+
+        $exitArr['success'] = $success;
+        $exitArr['message'] = $message ?: "ERROR PARSING";
+        $log_message = $log_message ?: $exitArr['message'];
+
+        $class = 'success';
+
+        if(!$exitArr['success']){
+
+            $class = 'error';
+
+            $this->writeLog($log_message, "parsing_log.txt");
+
+        }
+
+        if($exit){
+            $exitArr['message'] = '<div> class="' . $class . '"' . $exitArr['message'] . '</div>';
+            exit(json_encode($exitArr));
+        }
     }
 
     /**
