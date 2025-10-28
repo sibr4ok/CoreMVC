@@ -10,7 +10,7 @@ const UPLOAD_DIR = 'userfiles/';
 
 const COOKIE_VERSION = '1.0.0';
 # Ключ шифрования для кука файлов
-const CRYPT_KEY = '';
+const CRYPT_KEY = '1576156db624ef8c484f98c7278d78a6';
 # Время сессии для админа
 const COOKIE_TIME = 60;
 # Время блокировки при подборе пароля
