@@ -6,15 +6,15 @@ use core\base\exceptions\DbException;
 
 abstract class BaseModel extends BaseModelMethods
 {
-    protected $db;
+    protected \mysqli $db;
 
     /**
      * @throws DbException
      */
-    protected function connect()
+    protected function connect(): void
     {
         try {
-            # Подключаем к БД, объект содержащий выборку даных
+            # Подключаем к БД, объект содержащий выборку данных
             $this->db = @new \mysqli(HOST, USER, PASS, DB_NAME);
 
             # Устанавливаем кодировку соединения
@@ -26,13 +26,15 @@ abstract class BaseModel extends BaseModelMethods
         }
 
     }
+
     /**
      * @param string $query
      * @param string $crud = r - SELECT, c - INSERT, u - UPDATE, d - DELETE
      * @param bool $return_id
+     * @return array|bool|object|null
      * @throws DbException
      */
-    final public function query(string $query, string $crud = 'r', bool $return_id = false)
+    final public function query(string $query, string $crud = 'r', bool $return_id = false) : array|bool|object|null
     {
         try {
             $result = $this->db->query($query);
@@ -46,26 +48,20 @@ abstract class BaseModel extends BaseModelMethods
             }
 
             switch ($crud) {
-                //read
                 case 'r':
                     # Считываем колонки из таблицы
                     if ($result->num_rows) {
                         $res = [];
-
                         for ($i = 0; $i < $result->num_rows; $i++) {
                             $res[] = $result->fetch_assoc();
                         }
                         return $res;
                     }
                     return false;
-                //creat
                 case 'c':
 
-                    if ($return_id)
-                        // Возвращает id
-                        return $this->db->insert_id;
+                    if ($return_id) return $this->db->insert_id;
                     return true;
-
                 default:
                     return true;
             }
@@ -75,13 +71,14 @@ abstract class BaseModel extends BaseModelMethods
                 . $e->getMessage(), 1);
         }
     }
+
     /**
      * Универсальный метод чтения из БД
-     * @param mixed $table - таблица БД
+     * @param string $table - таблица БД
      * @param array $set
      * 'fields' => ['id', 'name'],
      * 'no_concat' => false/true если true - не присоединять имя таблицы к полям и where
-     * 'where' => ['fio' => 'Smirnova', 'name' => 'Masha'],
+     * 'where' => ['fio' => 'Smirnov', 'name' => 'Masha'],
      * 'operand' => ['=', '<>'],
      * 'condition' => ['AND'],
      * 'order' => ['fio', 'name'],
@@ -111,13 +108,14 @@ abstract class BaseModel extends BaseModelMethods
      *         ]
      *     ],
      * ]
+     * @throws DbException
      */
-    final public function read($table, array $set = [])
+    final public function read(string $table, array $set = []) : array|bool|object|null
     {
         $fields = $this->createFields($set, $table);
         $where = $this->createWhere($set, $table);
 
-        $new_where = !$where ? true : false;
+        $new_where = !$where;
 
         $join_arr = $this->createJoin($set, $table, $new_where);
         $fields .= $join_arr['fields'];
@@ -132,20 +130,28 @@ abstract class BaseModel extends BaseModelMethods
 
         $query = "SELECT $fields FROM $table $join $where $order $limit";
 
-        return $this->query($query);
+        $res = $this->query($query);
+
+//        if(isset($set['join_structure']) && $set['join_structure'] && $res) {
+//            $res = $this->joinStructure($res, $table);
+//        }
+
+        return $res;
     }
+
     /**
      * Универсальный метод создания БД
-     * @param mixed $table - таблица для вставки данных
+     * @param string $table - таблица для вставки данных
      * @param array $set - массив параметров
      * fields => [поле=>значения]; если не указан, то обрабатывается $_POST [поле=>значения]
      * разрешена передача NOW() в качестве Mysql функции обычной строкой
      * files => [поле=>значения]; можно подать массив вида [поле=>[массив значений]]
      * except => ['исключение 1','исключение 2'] - исключает данные элементы массива из добавления в запрос
      * return_id => true|false - возвращать или нет идентификатор вставленной записи
-     * @return mixed
+     * @return array|bool|object|null
+     * @throws DbException
      */
-    final public function create($table, $set = [])
+    final public function create(string $table,array $set = []) : array|bool|object|null
     {
 
         $set['fields'] = (is_array($set['fields']) && !empty($set['fields'])) ? $set['fields'] : $_POST;
@@ -162,6 +168,7 @@ abstract class BaseModel extends BaseModelMethods
         $query = "INSERT INTO $table {$insert_arr['fields']} VALUES {$insert_arr['values']}";
         return $this->query($query, 'c', $set['return_id']);
     }
+
     /**
      * Универсальный метод обновления БД
      * @param mixed $table - таблица для вставки данных
@@ -171,9 +178,10 @@ abstract class BaseModel extends BaseModelMethods
      * files => [поле=>значения]; можно подать массив вида [поле=>[массив значений]]
      * except => ['исключение 1','исключение 2'] - исключает данные элементы массива из добавления в запрос
      * all_rows => true|false
-     * @return mixed
+     * @return array|bool|object|null
+     * @throws DbException
      */
-    final public function update($table, $set = [])
+    final public function update(string $table, array $set = []) : array|bool|object|null
     {
         $set['fields'] = (is_array($set['fields']) && !empty($set['fields'])) ? $set['fields'] : $_POST;
         $set['files'] = (is_array($set['files']) && !empty($set['files'])) ? $set['files'] : false;
@@ -207,12 +215,13 @@ abstract class BaseModel extends BaseModelMethods
 
         return $this->query($query, 'u');
     }
+
     /**
      * Универсальный метод удаления БД, с возможностью сброса полей по умолчанию(если указаны)
      * @param mixed $table - таблица БД
      * @param array $set
      * 'fields' => ['id', 'name'],
-     * 'where' => ['fio' => 'Smirnova', 'name' => 'Masha'],
+     * 'where' => ['fio' => 'Smirnov', 'name' => 'Masha'],
      * 'operand' => ['=', '<>'],
      * 'condition' => ['AND'],
      * 'join' => [
@@ -239,23 +248,22 @@ abstract class BaseModel extends BaseModelMethods
      *         ]
      *     ],
      * ]
+     * @return array|bool|object|null
+     * @throws DbException
      */
-    public function delete($table, $set = [])
+    public function delete(string $table, array $set = []) : array|bool|object|null
     {
         //$table = trim($table);
 
         $where = $this->createWhere($set, $table);
-
         $columns = $this->showColumns($table);
-        if (!$columns)
-            return false;
+        if (!$columns) return false;
 
         if (is_array($set['fields']) && !empty($set['fields'])) {
 
             if ($columns['id_row']) {
                 $key = array_search($columns['id_row'], $set['fields']);
-                if ($key !== false)
-                    unset($set['fields'][$key]);
+                if ($key !== false) unset($set['fields'][$key]);
             }
             $fields = [];
             foreach ($set['fields'] as $field) {
@@ -263,7 +271,7 @@ abstract class BaseModel extends BaseModelMethods
             }
 
             $update = $this->createUpdate($fields, false, false);
-            $query = "UPDATE $table SET $update $where";
+            $query = "UPDATE \$table SET \$update \$where";
         } else {
 
             $join_arr = $this->createJoin($set, $table);
@@ -271,12 +279,8 @@ abstract class BaseModel extends BaseModelMethods
             $join_table = $join_arr['tables'];
 
             $query = "DELETE $table" . "$join_table FROM $table $join $where";
-
         }
-
-
         return $this->query($query, "d");
-
     }
 
     /**
@@ -284,19 +288,29 @@ abstract class BaseModel extends BaseModelMethods
      */
     final public function showColumns($table): array
     {
-        $query = "SHOW COLUMNS FROM $table";
-        $res = $this->query($query);
+        if(!isset($this->table_rows[$table]) || empty($this->table_rows[$table])) {
 
-        $columns = [];
+            $query = "SHOW COLUMNS FROM $table";
+            $res = $this->query($query);
+            $this->table_rows[$table] = [];
 
-        if ($res) {
-            foreach ($res as $row) {
-                $columns[$row['Field']] = $row;
-                if ($row['Key'] === "PRI")
-                    $columns['id_row'] = $row['Field'];
+            if ($res) {
+                foreach ($res as $row) {
+                    $this->table_rows[$table][$row['Field']] = $row;
+                    if ($row['Key'] === "PRI") {
+
+                        if (!isset($this->table_rows[$table]['id_row'])) {
+                            $this->table_rows[$table]['id_row'] = $row['Field'];
+                        } else {
+                            if (!isset($this->table_rows[$table]['multi_id_row']))
+                                $this->table_rows[$table]['multi_id_row'][] = $this->table_rows[$table]['id_row'];
+                            $this->table_rows[$table]['multi_id_row'][] = $row['Field'];
+                        }
+                    }
+                }
             }
         }
-        return $columns;
+        return $this->table_rows[$table];
     }
 
     /**
@@ -305,9 +319,7 @@ abstract class BaseModel extends BaseModelMethods
     final public function showTables(): array
     {
         $query = "SHOW TABLES";
-
         $tables = $this->query($query);
-
         $table_arr = [];
 
         if($tables) {
