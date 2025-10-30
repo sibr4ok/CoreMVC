@@ -24,10 +24,11 @@ abstract class BaseModelMethods
 
             if(isset($this->table_rows[$table]['multi_id_row'])) $set['fields'] = [];
         }
+
         $concat_table = $table && !$set['no_concat'] ? $table . '.' : '';
 
         if(!isset($set['fields']) || !is_array($set['fields']) || !$set['fields']) {
-            if(!$join_structure) {
+            if(!$join) {
                 $fields = $concat_table . '*,';
             }else{
                 foreach($this->table_rows[$table] as $key => $item){
@@ -45,8 +46,12 @@ abstract class BaseModelMethods
                 }
 
                 if($field){
-                    if($join && $join_structure && !preg_match('/\s+as\s+/i', $field)) {
-                        $fields .= $concat_table . $field . ' as TABLE' . $table . 'TABLE_' . $field . ',';
+                    if($join && $join_structure) {
+                        if(preg_match('/^(.+)?\s+as\s+(.+)/i', $field, $match)) {
+                            $fields .= $concat_table . $match[1] . ' as TABLE' . $table . 'TABLE_' . $match[2] . ',';
+                        }else{
+                            $fields .= $concat_table . $field . ' as TABLE' . $table . 'TABLE_' . $field . ',';
+                        }
                     }else{
                         $fields .= $concat_table . $field . ',';
                     }
@@ -142,6 +147,9 @@ abstract class BaseModelMethods
 
     }
 
+    /**
+     * @throws DbException
+     */
     protected function createJoin($set, $table, $new_where = false) : array
     {
         $fields = '';
@@ -334,8 +342,37 @@ abstract class BaseModelMethods
         return rtrim($update, ",");
     }
 
-    protected function joinStructure($res, $table)
+    protected function joinStructure($res, $table): array
     {
+        $join_arr = [];
+        $id_row = $this->table_rows[$table]['id_row'];
 
+        foreach ($res as $value){
+            if($value){
+                if(!isset($join_arr[$value[$id_row]])) $join_arr[$value[$id_row]] = [];
+
+                foreach ($value as $key => $item){
+                    if(preg_match('/TABLE(.+)?TABLE/u', $key, $match)){
+                        $table_name_normal = $match[1];
+
+                        if(!isset($this->table_rows[$table_name_normal]['multi_id_row'])){
+                            $join_id_row = $value[$match[0] . '_' . $this->table_rows[$table_name_normal]['id_row']];
+                        }else{
+                            $join_id_row = '';
+                            foreach($this->table_rows[$table_name_normal]['multi_id_row'] as $multi){
+                                $join_id_row .= $value[$match[0] . '_' . $multi];
+                            }
+                        }
+                        $row = preg_replace('/TABLE(.+)?TABLE_/u', '', $key);
+
+                        if($join_id_row && !isset($join_arr[$value[$id_row]]['join'][$table_name_normal][$join_id_row][$row])){
+                            $join_arr[$value[$id_row]]['join'][$table_name_normal][$join_id_row][$row] = $item;
+                        }
+                    }
+                    $join_arr[$value[$id_row]][$key] = $item;
+                }
+            }
+        }
+        return $join_arr;
     }
 }

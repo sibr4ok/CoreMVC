@@ -132,9 +132,9 @@ abstract class BaseModel extends BaseModelMethods
 
         $res = $this->query($query);
 
-//        if(isset($set['join_structure']) && $set['join_structure'] && $res) {
-//            $res = $this->joinStructure($res, $table);
-//        }
+        if(isset($set['join_structure']) && $set['join_structure'] && $res) {
+            $res = $this->joinStructure($res, $table);
+        }
 
         return $res;
     }
@@ -288,7 +288,7 @@ abstract class BaseModel extends BaseModelMethods
      */
     final public function showColumns($table): array
     {
-        if(!isset($this->table_rows[$table]) || empty($this->table_rows[$table])) {
+        if(!isset($this->table_rows[$table]) || !$this->table_rows[$table]) {
 
             $query = "SHOW COLUMNS FROM $table";
             $res = $this->query($query);
