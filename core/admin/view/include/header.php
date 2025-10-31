@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
     <meta charset="utf-8" />
@@ -36,18 +36,20 @@
                         <form method="post"
                             action="<?= PATH . core\base\settings\Settings::get('routes')['admin']['alias'] ?>/search"
                             autocomplete="off">
-                            <input type="text" name="search" class="vg-input vg-text">
+                            <label>
+                                <input type="text" name="search" class="vg-input vg-text">
+                            </label>
                             <div class="vg-element vg-firm-background-color4 vg-box-shadow search_links search_res">
                             </div>
                         </form>
                     </div>
                 </div>
-                <a href="<?= PATH . core\base\settings\Settings::get('routes')['admin']['alias'] ?>/createsitemap"
-                    class="vg-element vg-box-shadow sitemap-button">
-                    <span class="vg-text vg-firm-color1">
-                        Create sitemap
-                    </span>
-                </a>
+<!--                <a href="--><?php //= PATH . core\base\settings\Settings::get('routes')['admin']['alias'] ?><!--/createsitemap"-->
+<!--                    class="vg-element vg-box-shadow sitemap-button">-->
+<!--                    <span class="vg-text vg-firm-color1">-->
+<!--                        Create sitemap-->
+<!--                    </span>-->
+<!--                </a>-->
                 <div class="vg-element vg-fifth">
                     <div class="vg-element vg-half vg-right">
                         <div class="vg-element vg-text vg-center">
@@ -69,12 +71,12 @@
                                 echo 'active' ?>">
                                 <span class="vg-element vg-half  vg-center">
                                     <span>
-                                        <img src="<?= PATH . ADMIN_TEMPLATE ?>img/<?= $item['img'] ? $item['img'] : 'pages.png' ?>"
+                                        <img src="<?= PATH . ADMIN_TEMPLATE ?>img/<?= $item['img'] ?: 'pages.png' ?>"
                                         alt="pages">
                                 </span>
                             </span>
                             <span class="vg-element vg-half vg-center vg_hidden">
-                                <span class="vg-text vg-firm-color5"><?= $item['name'] ? $item['name'] : $table ?></span>
+                                <span class="vg-text vg-firm-color5"><?= $item['name'] ?: $table ?></span>
                             </span>
                         </a>
                     <?php endforeach; ?>
