@@ -55,7 +55,7 @@ class FileEdit
         // Собираем название файла без расширения
         $fileName = implode('.', $fileNameArr);
 
-        $fileName = (new TextModify())->translit($fileName);
+        $fileName = new TextModify()->translit($fileName);
 
         $fileName = $this->checkFile($fileName, $ext);
         // формируем полный путь

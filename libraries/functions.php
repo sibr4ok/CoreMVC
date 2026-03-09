@@ -1,6 +1,6 @@
 <?php
 
-function print_arr($arr)
+function print_arr($arr): void
 {
     echo '<pre>';
     print_r($arr);
@@ -8,7 +8,7 @@ function print_arr($arr)
 }
 
 if (!function_exists('mb_str_replace')) {
-    function mb_str_replace($needl, $text_replace, $haystack)
+    function mb_str_replace($needl, $text_replace, $haystack): string
     {
         return implode($text_replace, explode($needl, $haystack));
     }

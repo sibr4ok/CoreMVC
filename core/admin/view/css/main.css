@@ -203,7 +203,7 @@ label.vg-element {
 }
 
 .vg-firm-color2 {
-    color: #00bfe8;
+    color: #ccfff9;
 }
 
 .vg-firm-color3 {
@@ -223,7 +223,7 @@ label.vg-element {
 }
 
 .vg-firm-background-color2 {
-    background-color: #00bfe8;
+    background-color: #ccfff9;
 }
 
 .vg-firm-background-color3 {
@@ -394,7 +394,7 @@ label.vg-element {
 
 .vg-menu a:hover {
     background: #262f3d;
-    border-left: 2px solid #00bfe8;
+    border-left: 2px solid #ccfff9;
 }
 
 .vg-menu a .vg-half {
@@ -429,7 +429,7 @@ label.vg-element {
 }
 
 .active {
-    border-left: 2px solid #00bfe8;
+    border-left: 2px solid #ccfff9;
 }
 
 
@@ -510,7 +510,7 @@ textarea {
 }
 
 .success {
-    background: #00bfe8;
+    background: #ccfff9;
     color: #eceef2;
 }
 

@@ -11,8 +11,7 @@ class ShopSettings
     private array $routes = [
         'plugins' => [
             'dir' => false,
-            'routes' => [],
-            'lalalal' => 'kdasjlf'
+            'routes' => []
         ]
     ];
 }

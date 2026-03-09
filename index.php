@@ -21,10 +21,7 @@ use core\base\controllers\RouteController;
 try {
     # Обращаемся к статическому методу без создания объекта
     RouteController::getInstance()->route();
-} catch (RouteException $e) {
-
-    exit($e->getMessage());
-} catch (DbException $e) {
+} catch (RouteException|DbException $e) {
 
     exit($e->getMessage());
 }
