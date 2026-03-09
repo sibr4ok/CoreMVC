@@ -8,8 +8,8 @@ function print_arr($arr): void
 }
 
 if (!function_exists('mb_str_replace')) {
-    function mb_str_replace($needl, $text_replace, $haystack): string
+    function mb_str_replace($need, $text_replace, $haystack): string
     {
-        return implode($text_replace, explode($needl, $haystack));
+        return implode($text_replace, explode($need, $haystack));
     }
 }
